@@ -11,7 +11,6 @@
     <link rel="preload" as="style" onload="this.rel='stylesheet'" href="https://fonts.googleapis.com/earlyaccess/sawarabimincho.css">
     <link rel="preload" as="style" onload="this.rel='stylesheet'" href="https://fonts.googleapis.com/earlyaccess/nicomoji.css">
     <link rel="preload" as="style" onload="this.rel='stylesheet'" href="https://fonts.googleapis.com/earlyaccess/sawarabigothic.css">
-    <script src="ga.js"></script>
     <script src="jsgif/b64.js"></script>
     <script src="jsgif/NeuQuant.js"></script>
     <script src="jsgif/LZWEncoder.js"></script>
@@ -184,6 +183,10 @@
               <div class="card-title h5">効果</div>
             </div>
             <div class="card-body">
+              <div class="form-group">
+                <label class="form-label">サイズ</label>
+                <input type="range" min="48" max="128" step="4" v-model="target.size" @change="refreshDefaultSettings"> <span> {{target.size}}</span>
+              </div>
               <div class="form-group">
                 <label class="form-label">拡大縮小</label>
                 <select v-model="target.trimming" @change="refreshDefaultSettings" class="form-select">
