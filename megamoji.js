@@ -434,16 +434,16 @@ function animation_push_vertical (keyframe, ctx, image, offsetH, offsetV, width,
     animation_scroll_vertical(keyframe, ctx, image, offsetH, offsetV, width, height, cellWidth, cellHeight);
 }
 
-function render_result_cell (image, offsetH, offsetV, width, height, animation, animationInvert, effects, framerate, background) {
+function render_result_cell (image, size, offsetH, offsetV, width, height, animation, animationInvert, effects, framerate, background) {
     var canvas = document.createElement("canvas");
     var ctx = canvas.getContext('2d');
 
     if (!animation && !effects.length) {
-        canvas.width = EMOJI_SIZE;
-        canvas.height = EMOJI_SIZE;
+        canvas.width = size;
+        canvas.height = size;
         ctx.fillStyle = background;
-        ctx.fillRect(0, 0, EMOJI_SIZE, EMOJI_SIZE);
-        ctx.drawImage(image, offsetH, offsetV, width, height, 0, 0, EMOJI_SIZE, EMOJI_SIZE);
+        ctx.fillRect(0, 0, size, size);
+        ctx.drawImage(image, offsetH, offsetV, width, height, 0, 0, size, size);
 
         return canvas.toDataURL();
     } else {
@@ -577,6 +577,7 @@ var store = {
     },
     target: {
         /* basic */
+        size: EMOJI_SIZE,
         trimming: "",
         hCells: 1,
         vCells: 1,
@@ -609,8 +610,9 @@ var methods = {
         var image = vm.$refs.baseImage;
         var v     = vm.target.vCells;
         var h     = vm.target.hCells;
-        var width_ratio  = (EMOJI_SIZE * h) / image.naturalWidth;
-        var height_ratio = (EMOJI_SIZE * v) / image.naturalHeight;
+        var size  = vm.target.size;
+        var width_ratio  = (size * h) / image.naturalWidth;
+        var height_ratio = (size * v) / image.naturalHeight;
 
         if (vm.target.trimming == "cover") {
             width_ratio = height_ratio = Math.max(width_ratio, height_ratio);
@@ -620,8 +622,8 @@ var methods = {
 
         vm.target.hZoom      = width_ratio + "";
         vm.target.vZoom      = height_ratio + "";
-        vm.target.offsetLeft = (image.naturalWidth - EMOJI_SIZE / width_ratio * h) / 2 + "";
-        vm.target.offsetTop  = Math.min(0, (image.naturalHeight - EMOJI_SIZE / height_ratio * v) / 2) + "";
+        vm.target.offsetLeft = (image.naturalWidth - size / width_ratio * h) / 2 + "";
+        vm.target.offsetTop  = Math.min(0, (image.naturalHeight - size / height_ratio * v) / 2) + "";
     },
     render: function () {
         var image     = vm.$refs.baseImage;
@@ -631,14 +633,16 @@ var methods = {
         var offsetLeft = parseInt(vm.target.offsetLeft);
         var offsetTop  = parseInt(vm.target.offsetTop);
 
-        var cell_width = EMOJI_SIZE / vm.target.hZoom;
-        var cell_height = EMOJI_SIZE / vm.target.vZoom;
+        var size = vm.target.size;
+        var cell_width = size / vm.target.hZoom;
+        var cell_height = size / vm.target.vZoom;
 
         vm.resultImages = [];
         for (var y = 0; y < vm.target.vCells; y++) {
             for (var x = 0, row = []; x < vm.target.hCells; x++) {
                 var url = render_result_cell(
                     image,
+                    size,
                     offsetLeft + x * cell_width, offsetTop + y * cell_height,
                     cell_width, cell_height,
                     animation, vm.target.animationInvert,
@@ -648,8 +652,6 @@ var methods = {
             }
             vm.resultImages.push(row);
         }
-
-        ga("send", "event", "emoji", "render");
     },
     onToggleFileDetails: function () {
         vm.source.file.showDetails = !vm.source.file.showDetails;
@@ -672,18 +674,15 @@ var methods = {
         vm.source.file.url ? vm.loadUrl() : vm.loadFile();
     },
     onClickGenerateText: function () {
+        var size = vm.target.size;
         vm.baseImage = generate_text_image(
             vm.source.text.content,
             vm.source.text.color,
-            vm.source.text.font.replace(/^([^ ]+)/, "$1 " + EMOJI_SIZE + "px"),
+            vm.source.text.font.replace(/^([^ ]+)/, "$1 " + size + "px"),
             vm.source.text.align,
-            vm.source.text.lineSpacing * EMOJI_SIZE
+            vm.source.text.lineSpacing * size
         );
     }
 };
 
 var vm = new Vue({ el: "#app", data: store, methods: methods });
-
-window.onerror = function (msg, file, line, col) {
-    ga('send', 'event', "error", "thrown", file + ":" + line + ":" + col + " " + msg);
-};
